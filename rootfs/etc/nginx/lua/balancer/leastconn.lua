@@ -41,26 +41,27 @@ function _M.balance(self)
     if #peers ~= 1 then
         local lowestconns = 9999
         -- find the lowest connection count
+        -- if the peer has equal lowest connection count, add it to the list of feasible_endpoints
+        -- if the peer has a lower connection count, reset feasible_endpoints and add the peer
         for _, peer in pairs(peers) do
-            local conns = endpoints:get(get_upstream_name(peer))
+            local peername = get_upstream_name(peer)
+            local conns = endpoints:get(peername)
             if conns == nil then
               endpoints:set(get_upstream_name(peer),0,600)
               conns = 0
             end
-            ngx_log(WARN, "Found ", conns, " conns for peer ", get_upstream_name(peer))
-            if conns <= lowestconns then
+            ngx_log(ngx.DEBUG, "Found ", conns, " conns for peer ", peername)
+            if conns == lowsestconns then
+                feasible_endpoints[#feasible_endpoints+1] = peer
+            end
+            if conns < lowestconns then
                 lowestconns = conns
+                feasible_endpoints = {}
+                feasible_endpoints[1] = peer
             end
         end
 
-        -- get peers with lowest connections
-        for _, peer in pairs(peers) do
-            local conns = endpoints:get(get_upstream_name(peer))
-            if conns ~= nil and conns == lowestconns then
-                feasible_endpoints[#feasible_endpoints+1] = peer
-            end
-        end
-        ngx_log(WARN, "got ", #feasible_endpoints, " feasible endpoints")
+        ngx_log(ngx.INFO, "got ", #feasible_endpoints, " feasible endpoints")
 
         endpoint = feasible_endpoints[math.random(1,#feasible_endpoints)]
     end
