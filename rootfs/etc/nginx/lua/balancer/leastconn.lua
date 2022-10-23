@@ -39,7 +39,7 @@ function _M.balance(self)
     local feasible_endpoints = {}
 
     if #peers ~= 1 then
-        local lowestconns = 9999
+        local lowestconns = 2147483647
         -- find the lowest connection count
         -- if the peer has equal lowest connection count, add it to the list of feasible_endpoints
         -- if the peer has a lower connection count, reset feasible_endpoints and add the peer
