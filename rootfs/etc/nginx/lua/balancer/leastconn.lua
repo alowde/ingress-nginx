@@ -10,9 +10,6 @@ local tonumber = tonumber
 local setmetatable = setmetatable
 local string_format = string.format
 local ngx_log = ngx.log
-local INFO = ngx.INFO
-local WARN = ngx.WARN
-
 
 local _M = { name = "leastconn" }
 
@@ -69,7 +66,7 @@ function _M.balance(self)
     end
 
 
-    ngx_log(WARN, "chose endpoint ", get_upstream_name(endpoint))
+    ngx_log(ngx.INFO, "chose endpoint ", get_upstream_name(endpoint))
     -- Update the endpoint connection count with a TTL of 10 minutes
     endpoints:incr(get_upstream_name(endpoint),1,1,600)
 
@@ -80,13 +77,12 @@ function _M.after_balance(_)
     local endpoints = ngx.shared.balancer_leastconn
     local upstream = split.get_last_value(ngx.var.upstream_addr)
 
-    ngx_log(WARN, "decrement conn count for upstream ", upstream)
+    ngx_log(ngx.INFO, "decrement conn count for upstream ", upstream)
 
     if util.is_blank(upstream) then
         return
     end
-    ngx_log(WARN, "decrement endpoints", upstream)
-    ngx_log(WARN, endpoints:incr(upstream,-1,0,600))
+    ngx_log(ngx.DEBUG, endpoints:incr(upstream,-1,0,600))
 end
 
 function _M.sync(self, backend)
@@ -94,11 +90,11 @@ function _M.sync(self, backend)
         util.diff_endpoints(self.peers, backend.endpoints)
 
     if #normalized_endpoints_added == 0 and #normalized_endpoints_removed == 0 then
-        ngx_log(WARN, "endpoints did not change for backend " .. tostring(backend.name))
+        ngx_log(ngx.DEBUG, "endpoints did not change for backend " .. tostring(backend.name))
         return
     end
 
-    ngx_log(WARN, string_format("[%s] peers have changed for backend %s", self.name, backend.name))
+    ngx_log(ngx.INFO, string_format("[%s] peers have changed for backend %s", self.name, backend.name))
 
     self.peers = backend.endpoints
 
