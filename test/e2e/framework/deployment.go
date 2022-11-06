@@ -78,6 +78,12 @@ func WithDeploymentReplicas(r int) func(*deploymentOptions) {
 func WithServiceName(s string) func(*deploymentOptions) {
 	return func(o *deploymentOptions) {
 		o.serviceName = s
+  }
+}
+
+func WithName(n string) func(*deploymentOptions) {
+	return func(o *deploymentOptions) {
+		o.name = n
 	}
 }
 
